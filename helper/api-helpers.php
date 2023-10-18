@@ -107,15 +107,24 @@ function compileReceiptData($receipt, $transaction) {
     ];
 
     $variations_data = [];
+    $vinyl_type = 'standard_colors'; // Default value
+
     if (isset($transaction['variations'])) {
         foreach ($transaction['variations'] as $index => $variation) {
             $variations_data["variations_name_" . ($index + 1)] = $variation['formatted_name'];
             $variations_data["variations_value_" . ($index + 1)] = $variation['formatted_value'];
+
+            // Check if variations_value_2 contains the word "Premium"
+            if ($index + 1 === 2 && strpos(strtolower($variation['formatted_value']), 'premium') !== false) {
+                $vinyl_type = 'glitter_colors';
+            }
         }
     }
 
-    return array_merge($baseData, $transactionData, $variations_data);
+    // Add vinyl_type to the return array
+    return array_merge($baseData, $transactionData, $variations_data, ['vinyl_type' => $vinyl_type]);
 }
+
 
 
 

@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: A Few Originals Order Page
-Description: A simple plugin to display orders with an AJAX-powered Hello World button.
-Version: 1.0
-Author: Your Name
+Description: Etsy Order Managment Plugin
+Version: 2.0
+Author: Wade Keller
 */
 
 // Make sure we don't expose any info if called directly
@@ -28,9 +28,14 @@ include_once plugin_dir_path( __FILE__ ) . 'helper/orders-list-table.php';
 
 // Function to enqueue scripts and styles
 function afop_enqueue_scripts() {
+    $version = time(); // current timestamp
     wp_enqueue_script('jquery'); // Enqueue jQuery which comes with WordPress
-    wp_enqueue_script('afop-ajax-script', plugin_dir_url( __FILE__ ) . 'js/afop_ajax.js', array('jquery'), '1.0', true);
+    wp_enqueue_script('afop-ajax-script', plugin_dir_url(__FILE__) . 'js/afop_ajax.js?ver=' . $version, ['jquery'], null, true);
+    //wp_enqueue_script('afop-ajax-script', plugin_dir_url( __FILE__ ) . 'js/afop_ajax.js', array('jquery'), '1.0', true);
     wp_localize_script('afop-ajax-script', 'afop_ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ));
+ 
+
+
 }
 add_action('admin_enqueue_scripts', 'afop_enqueue_scripts');
 
@@ -232,5 +237,74 @@ error_log("options: " . print_r($options, true));  // Debug line
     }
     wp_die();
 }
+
+
+add_action('wp_ajax_process_bulk_action', 'few_process_bulk_action');
+
+function few_process_bulk_action() {
+    error_log('few_process_bulk_action function is being executed.');
+    error_log(print_r($_POST, true)); // Log the entire POST array
+
+  global $wpdb; // Global WordPress database object
+    $table_name = 'few_etsy_orders';
+    if (isset($_POST['action'])) {
+        $selectedAction = $_POST['action'];
+        error_log($selectedAction); // Log the entire POST array
+    } else {
+        error_log('selectedAction is not set.');
+        die();
+    }
+    parse_str($_POST['formData'], $formDataArray); // Parse the form data into an array
+    error_log(print_r($formDataArray, true)); // Log the entire POST array
+    // Perform actions based on $selectedAction
+    if ($selectedAction === 'update_db') {
+        // Loop through the items and update the database
+        foreach ($formDataArray['items'] as $item) { // Replace 'items' with the actual key in formData
+            $id = $item['id'];
+            $font = $item['variations_value_1'];
+            $vinyl_type = $item['vinyl_type'];
+            $color = $item['vinyl_color'];
+            $decal_text = $item['decal_text'];
+
+            // Update the database
+            $wpdb->update(
+                $table_name,
+                [
+                    'variations_value_1' => $font,
+                    'vinyl_type' => $vinyl_type,
+                    'vinyl_color' => $color,
+                    'decal_text' => $decal_text
+                ],
+                ['id' => $id]
+            );
+        }
+    }
+
+    // Don't forget to die() at the end of AJAX in WordPress
+    die();
+}
+
+
+
+
+function get_vinyl_colors() {
+    $vinyl_type = strtolower($_POST['vinyl_type']);
+    $vinyl_color_data = get_option($vinyl_type, []);
+    $options = '';
+
+    if (!empty($vinyl_color_data)) {
+        foreach ($vinyl_color_data as $color) {
+            $options .= "<option value=\"$color\">$color</option>";
+        }
+    } else {
+        $options = '<option value="">No colors available</option>';
+    }
+
+    echo $options;
+    wp_die();
+}
+
+add_action('wp_ajax_get_vinyl_colors', 'get_vinyl_colors');
+
 
 

@@ -72,12 +72,12 @@ function get_etsy_orders_activation() {
 	
 update_option('text_decal_listings', $text_decal_listings);
 	
-		$font_names = array(
-    'Alexis',
-    'Barbie',
-			    'Bonnie',
-			    'Carol',
-			    'Cowboy',
+$font_names = array(
+    'alexis',
+    'barbie',
+			    'bonnie',
+			    'carol',
+			    'cowboy',
 			    'darcy',
 			    'disney',
 			    'erica',
@@ -108,7 +108,7 @@ update_option('text_decal_listings', $text_decal_listings);
 			'jenna',
 			'kyle',
 			'lisa',
-			'Mark',
+			'mark',
 			'nancy',
 			'olivia',
 			'paige',
@@ -157,24 +157,24 @@ update_option('font_names', $font_names);
     'champagne glitter',
     'rose gold glitter',
     'dark red glitter',
-    'fluorescent pink glitter',
+    'flo pink glitter',
     'coral glitter',
     'orange glitter',
-    'fluorescent orange glitter',
-    'dark amethyst glitter',
+    'flo orange glitter',
+    'd. amethyst glitter',
     'purple glitter',
     'blue glitter',
     'light blue glitter',
     'green glitter',
-    'emerald green glitter',
+    'emerald glitter',
     'teal glitter',
     'tiff blue glitter',
     'sea foam glitter',
-    'fluorescent green glitter',
-    'lime-tree green glitter',
+    'flo green glitter',
+    'lime-tree glitter',
     'yellow glitter',
     'melon glitter',
-    'fluorescent blue glitter'
+    'flo blue glitter'
 );
 
 update_option('glitter_colors', $glitter_colors);
@@ -301,26 +301,6 @@ update_option('standard_colors', $standard_colors);
 	update_option('chrome_colors', $chrome_colors);
 	
 	
-			$vinyl_types = array(
-		'standard_colors',
-		'glitter_colors',
-			'fluorescent_colors',
-			'camouflage_colors',
-			'holographic_colors',
-			'chrome_colors',
-	
-	);
-	
-	
-	update_option('vinyl_types', $vinyl_types);
-	
-	
 	
 }
-
-
-	
-	
-	
-
 ?>
