@@ -297,6 +297,7 @@ class OrderItems_List_Table extends Base_List_Table {
 
     
     public function process_bulk_action() {
+        global $wpdb;
       // Parse formData from AJAX request
     parse_str($_POST['formData'], $formData);
     
@@ -316,20 +317,21 @@ class OrderItems_List_Table extends Base_List_Table {
                     $vinyl_type = isset($_POST['vinyl_type'][$id]) ? $_POST['vinyl_type'][$id] : null;
                     $color = isset($_POST['vinyl_color'][$id]) ? $_POST['vinyl_color'][$id] : null;
                     $decal_text = isset($_POST['decal_text'][$id]) ? $_POST['decal_text'][$id] : null;
-    
-                    // Update the database
-                    global $wpdb;
-                    $table_name = 'few_etsy_orders'; // Use $wpdb->prefix to add prefix
-                    $wpdb->update(
-                        $table_name,
-                        [
-                            'variations_value_1' => $font,
+
+                    $updated_data = array(
+                    'variations_value_1' => $font,
                             'vinyl_type' => $vinyl_type,
                             'vinyl_color' => $color,
                             'decal_text' => $decal_text
-                        ],
-                        ['id' => $id]
-                    );
+                    
+                     ) ;
+                        // Where clause to identify the record to update
+                        $where = array('id' => $record_id);
+                    // Update the database
+                 
+                    $table_name = 'few_etsy_orders'; // Use $wpdb->prefix to add prefix
+                   // Update the database
+                    $wpdb->update($table_name, $updated_data, $where);
                 }
     
                 // Redirect to the next order
