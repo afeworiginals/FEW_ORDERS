@@ -66,7 +66,7 @@ class Orders_List_Table extends Base_List_Table {
         if ($column_name == 'title' && strlen($item[$column_name]) > 30) {
             return substr($item[$column_name], 0, 30) . '...';
         } elseif ($column_name == 'decal_text') {
-            return '<input type="text" name="decal_text" value="' . esc_attr($item[$column_name]) . '">';
+            return '<input type="text" name="decal_text[]" value="' . esc_attr($item[$column_name]) . '">';
         }
         return $item[$column_name];
     }
@@ -78,80 +78,10 @@ class Orders_List_Table extends Base_List_Table {
 
     
 
-    protected function display_tablenav($which) {
-        ?>
-        <div class="tablenav <?php echo esc_attr($which); ?>">
-    
-  
-    
-            <!-- Bulk actions dropdown and Apply button -->
-            <div class="alignright actions bulkactions">
-                <label for="bulk-action-selector-<?php echo esc_attr($which); ?>" class="screen-reader-text">Select bulk action</label>
-                <select name="action" id="bulk-action-selector-<?php echo esc_attr($which); ?>">
-                    <option value="-1">Bulk Actions</option>
-                    <option value="update_db" selected>Update DB</option>
-                    <option value="delete">Delete</option>
-                </select>
-                <input type="submit" id="doaction" class="button action" value="Apply">
-            </div>
-    
-            <br class="clear">
-        </div>
-        <?php
-    }
+   
     
     
-    public function process_bulk_action() {
-        
-        $action = $this->current_action();
-        
-        switch ($action) {
-            case 'update_db':
-                // Get the current receipt_id from the URL
-                $current_receipt_id = isset($_GET['receipt_id']) ? intval($_GET['receipt_id']) : 0;
-    
-                // Update the database here
-                foreach ($this->items as $item) {
-                    // Assuming you have the item's ID and the new values are in $_POST
-                    $id = $item['id'];
-                    
-                    $font = isset($_POST['variations_value_1'][$id]) ? $_POST['variations_value_1'][$id] : null;
-                    $vinyl_type = isset($_POST['vinyl_type'][$id]) ? $_POST['vinyl_type'][$id] : null;
-                    $color = isset($_POST['vinyl_color'][$id]) ? $_POST['vinyl_color'][$id] : null;
-                    $decal_text = isset($_POST['decal_text'][$id]) ? $_POST['decal_text'][$id] : null;
-    
-                    // Update the database
-                    global $wpdb;
-                    $table_name = 'few_etsy_orders'; // Use $wpdb->prefix to add prefix
-                    $wpdb->update(
-                        $table_name,
-                        [
-                            'variations_value_1' => $font,
-                            'vinyl_type' => $vinyl_type,
-                            'vinyl_color' => $color,
-                            'decal_text' => $decal_text
-                        ],
-                        ['id' => $id]
-                    );
-                }
-    
-                // Redirect to the next order
-                $next_receipt_id = get_next_receipt_id($current_receipt_id);
-                if ($next_receipt_id) {
-                    $next_order_url = admin_url('admin.php?page=afeworiginals-order-items&receipt_id=' . $next_receipt_id);
-                    wp_redirect($next_order_url);
-                    exit;
-                }
-                break;
-            case 'delete':
-                // Handle Delete logic here
-                break;
-            default:
-                // Do nothing or add some other logic
-                break;
-        }
-    }
-    
+   
     
     
 }
@@ -161,7 +91,7 @@ class OrderItems_List_Table extends Base_List_Table {
     private $order_items;
 
     private function generate_select_box($name, $options, $selected_value, $row_id) {
-        $select = "<select name='{$name}' data-row-id='{$row_id}'>";
+        $select = "<select name='{$name}[]' data-row-id='{$row_id}'>";  // Added [] to the name attribute
         foreach ($options as $option) {
             $option_lower = strtolower($option);
             $selected = ($selected_value == $option_lower) ? 'selected' : '';
@@ -170,6 +100,7 @@ class OrderItems_List_Table extends Base_List_Table {
         $select .= '</select>';
         return $select;
     }
+    
 
     protected function display_tablenav($which) {
 
@@ -184,7 +115,7 @@ class OrderItems_List_Table extends Base_List_Table {
     // Create the URLs for the previous and next orders
     $prev_order_url = admin_url('admin.php?page=afeworiginals-order-items&receipt_id=' . $prev_receipt_id);
     $next_order_url = admin_url('admin.php?page=afeworiginals-order-items&receipt_id=' . $next_receipt_id);
-
+    echo '<input type="hidden" id="next_receipt_id" value="' . $next_receipt_id . '">';
 
         ?>
         <div class="tablenav <?php echo esc_attr($which); ?>">
@@ -202,7 +133,7 @@ class OrderItems_List_Table extends Base_List_Table {
             <!-- Bulk actions dropdown and Apply button -->
             <div class="alignright actions bulkactions">
                 <label for="bulk-action-selector-<?php echo esc_attr($which); ?>" class="screen-reader-text">Select bulk action</label>
-                <select name="action" id="bulk-action-selector-<?php echo esc_attr($which); ?>">
+                <select name="few_action" id="bulk-action-selector-<?php echo esc_attr($which); ?>">
                     <option value="-1">Bulk Actions</option>
                     <option value="update_db" selected>Update DB</option>
                     <option value="delete">Delete</option>
@@ -224,15 +155,16 @@ class OrderItems_List_Table extends Base_List_Table {
     public function get_columns() {
         return [
             'cb' => '<input type="checkbox" class="check-all" />', 
+            'db_id' => 'ID',  // Add this line
             'listing_image_id' => '',
-            'transaction_id' => 'Transaction ID',
+            'transaction_id' => 'Trans ID',
             'title' => 'Title',
             'variations_value_1' => '<input type="checkbox" id="check-all-font" /> Font',
             'variations_value_2' => 'Size',
-            'vinyl_type' => '<input type="checkbox" id="check-all-vinyl-type" /> Vinyl Type',
+            'vinyl_type' => '<input type="checkbox" id="check-all-vinyl-type" /> Type',
             'vinyl_color' => '<input type="checkbox" id="check-all-vinyl-color" /> Color',
-            'decal_text' => '<input type="checkbox" id="check-all-decal-text" /> Decal Text',
-            'buyer_message' => 'Buyer Message',
+            'decal_text' => '<input type="checkbox" id="check-all-decal-text" /> Text',
+            'buyer_message' => 'Message',
         ];
     }
 
@@ -243,10 +175,15 @@ class OrderItems_List_Table extends Base_List_Table {
 
     public function column_default($item, $column_name) {
         $select = '';  // Initialize $select
-        if ($column_name == 'title' && strlen($item[$column_name]) > 30) {
+        error_log(print_r($item, true));
+        if ($column_name == 'cb') {
+            return '<input type="checkbox" name="item_ids[]" value="' . $item['id'] . '">';
+        } elseif ($column_name == 'db_id') {
+            return '<input type="hidden" name="db_ids[]" value="' . $item['id'] . '">' . $item['id'];        
+        } elseif ($column_name == 'title' && strlen($item[$column_name]) > 30) {
             return substr($item[$column_name], 0, 30) . '...';
         } elseif ($column_name == 'decal_text') {
-            return '<input type="text" name="decal_text" value="' . esc_attr($item[$column_name]) . '">';
+            return '<input type="text" name="decal_text[]" value="' . esc_attr($item[$column_name]) . '">';
         } elseif ($column_name == 'variations_value_1') {
             // Get the font list from the WordPress options table 
             $font_list = get_option('font_names', []);
@@ -296,59 +233,7 @@ class OrderItems_List_Table extends Base_List_Table {
     }
 
     
-    public function process_bulk_action() {
-      // Parse formData from AJAX request
-    parse_str($_POST['formData'], $formData);
-    
-        $action = $this->current_action();
-        
-        switch ($action) {
-            case 'update_db':
-                // Get the current receipt_id from the URL
-                echo $current_receipt_id = isset($_GET['receipt_id']) ? intval($_GET['receipt_id']) : 0;
-    
-                // Update the database here
-                foreach ($this->items as $item) {
-                    // Assuming you have the item's ID and the new values are in $_POST
-                    $id = $item['id'];
-                    
-                    $font = isset($_POST['variations_value_1'][$id]) ? $_POST['variations_value_1'][$id] : null;
-                    $vinyl_type = isset($_POST['vinyl_type'][$id]) ? $_POST['vinyl_type'][$id] : null;
-                    $color = isset($_POST['vinyl_color'][$id]) ? $_POST['vinyl_color'][$id] : null;
-                    $decal_text = isset($_POST['decal_text'][$id]) ? $_POST['decal_text'][$id] : null;
-    
-                    // Update the database
-                    global $wpdb;
-                    $table_name = 'few_etsy_orders'; // Use $wpdb->prefix to add prefix
-                    $wpdb->update(
-                        $table_name,
-                        [
-                            'variations_value_1' => $font,
-                            'vinyl_type' => $vinyl_type,
-                            'vinyl_color' => $color,
-                            'decal_text' => $decal_text
-                        ],
-                        ['id' => $id]
-                    );
-                }
-    
-                // Redirect to the next order
-                $next_receipt_id = get_next_receipt_id($current_receipt_id);
-                if ($next_receipt_id) {
-                    $next_order_url = admin_url('admin.php?page=afeworiginals-order-items&receipt_id=' . $next_receipt_id);
-                    wp_redirect($next_order_url);
-                    exit;
-                }
-                break;
-            case 'delete':
-                // Handle Delete logic here
-                break;
-            default:
-                // Do nothing or add some other logic
-                break;
-        }
-    }
-       
+
     
 }
 

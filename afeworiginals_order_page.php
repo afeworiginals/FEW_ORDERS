@@ -69,7 +69,7 @@ function afop_etsy_api_callback() {
   // 1. Fetch Data from Etsy
     $config_data = get_etsy_config_data();
 	echo $config_data['shop_id'].'<br>';
-    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&limit=2";
+    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&limit=5";
 	echo $endpoint;
     $apiResponse = fetchEtsyData($endpoint, $config_data['access_token'], $config_data['client_id']);
 	
@@ -242,29 +242,44 @@ error_log("options: " . print_r($options, true));  // Debug line
 add_action('wp_ajax_process_bulk_action', 'few_process_bulk_action');
 
 function few_process_bulk_action() {
-    error_log('few_process_bulk_action function is being executed.');
-    error_log(print_r($_POST, true)); // Log the entire POST array
-
-  global $wpdb; // Global WordPress database object
+    global $wpdb;
     $table_name = 'few_etsy_orders';
-    if (isset($_POST['action'])) {
-        $selectedAction = $_POST['action'];
-        error_log($selectedAction); // Log the entire POST array
-    } else {
+
+    // Log the incoming POST data for debugging
+    error_log('few_process_bulk_action function is being executed DUDE.');
+    error_log(print_r($_POST, true));
+
+    // Parse the form data
+    parse_str($_POST['formData'], $formDataArray);
+
+    // Check if action is set
+    if (!isset($_POST['action'])) {
         error_log('selectedAction is not set.');
         die();
     }
-    parse_str($_POST['formData'], $formDataArray); // Parse the form data into an array
-    error_log(print_r($formDataArray, true)); // Log the entire POST array
-    // Perform actions based on $selectedAction
+
+    $selectedAction = $formDataArray['few_action'];
+    error_log('SELECTED ACTION: ' . $selectedAction);
+
+    // Log the parsed form data
+    error_log(print_r($formDataArray, true));
+
+    // Handle 'update_db' action
     if ($selectedAction === 'update_db') {
-        // Loop through the items and update the database
-        foreach ($formDataArray['items'] as $item) { // Replace 'items' with the actual key in formData
-            $id = $item['id'];
-            $font = $item['variations_value_1'];
-            $vinyl_type = $item['vinyl_type'];
-            $color = $item['vinyl_color'];
-            $decal_text = $item['decal_text'];
+        if (!isset($formDataArray['db_ids'])) {
+            error_log('db_ids are not set.');
+            die();
+        }
+
+        $db_ids = $formDataArray['db_ids'];
+        foreach ($db_ids as $index => $db_id) {
+            error_log("Processing db_id: " . $db_id);
+
+            // Extract other form data
+            $font = $formDataArray['variations_value_1'][$index] ?? null;
+            $vinyl_type = $formDataArray['vinyl_type'][$index] ?? null;
+            $color = $formDataArray['vinyl_color'][$index] ?? null;
+            $decal_text = $formDataArray['decal_text'][$index] ?? null;
 
             // Update the database
             $wpdb->update(
@@ -275,14 +290,33 @@ function few_process_bulk_action() {
                     'vinyl_color' => $color,
                     'decal_text' => $decal_text
                 ],
-                ['id' => $id]
+                ['id' => $db_id]
+            );
+        }
+    }
+    // Handle 'delete' action
+    elseif ($selectedAction === 'delete') {
+        if (!isset($formDataArray['db_ids'])) {
+            error_log('db_ids are not set.');
+            die();
+        }
+
+        $db_ids = $formDataArray['db_ids'];
+        foreach ($db_ids as $db_id) {
+            error_log("Deleting db_id: " . $db_id);
+
+            // Delete the database row
+            $wpdb->delete(
+                $table_name,
+                ['id' => $db_id]
             );
         }
     }
 
-    // Don't forget to die() at the end of AJAX in WordPress
     die();
+
 }
+
 
 
 
