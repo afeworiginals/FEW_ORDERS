@@ -1,6 +1,7 @@
 # FEW_ORDERS
 
 PLEASE BE AWARE THAT THIS PLUGIN IS NOT DESIGNED FOR PUBLIC RELEASE AS MUCH OF THE PUGIN FUNCTIONS ARE SPECIFIC TO OUR SITUATION
+
 Our Custom Etsy Order Manager for WordPress
 Description
 Etsy Order Manager is a WordPress plugin we designed to streamline our order management process. It uses Etsy API v3 to fetch unshipped orders and stores them in a database. The plugin provides an intuitive interface to display these orders in a table format, allowing you to easily edit and save order details back into the database.
