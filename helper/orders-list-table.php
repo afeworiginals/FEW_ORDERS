@@ -100,6 +100,13 @@ class OrderItems_List_Table extends Base_List_Table {
         $select .= '</select>';
         return $select;
     }
+
+    public function __construct($order_items) {
+        parent::__construct();
+        $this->order_items = $order_items;
+    }
+
+    
     
 
     protected function display_tablenav($which) {
@@ -145,12 +152,12 @@ class OrderItems_List_Table extends Base_List_Table {
         </div>
         <?php
     }
+
+  
+    
     
 
-    public function __construct($order_items) {
-        parent::__construct();
-        $this->order_items = $order_items;
-    }
+   
 
     public function get_columns() {
         return [
@@ -170,8 +177,9 @@ class OrderItems_List_Table extends Base_List_Table {
 
     public function prepare_items() {
         $this->_column_headers = [$this->get_columns(), [], []];
-        $this->items = $this->order_items;
+        $this->items = $this->order_items;  // Changed from $this->orders to $this->order_items
     }
+    
 
     public function column_default($item, $column_name) {
         $select = '';  // Initialize $select
@@ -226,9 +234,7 @@ class OrderItems_List_Table extends Base_List_Table {
 
     public function display() {
         echo '<form id="order-items-form" method="post">';
-        // Removed the display_tablenav('top') call here
         parent::display();
-        // Removed the display_tablenav('bottom') call here
         echo '</form>';
     }
 
