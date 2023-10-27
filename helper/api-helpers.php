@@ -30,7 +30,8 @@ function fetchEtsyData($url, $token, $clientId, $headers = []) {
     curl_setopt_array($ch, [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => $headers
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_CAINFO => '/wamp64/www/wordpress/cacert.pem'
     ]);
 
     $response = curl_exec($ch);
