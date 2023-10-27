@@ -52,7 +52,7 @@ function refreshAccessToken($refresh_token) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // Example (you need to replace this with Etsy's actual API endpoint and parameters):
+    curl_setopt($ch, CURLOPT_CAINFO, '/wamp64/www/wordpress/cacert.pem');
 	
 	// Execute the cURL request
     $response = curl_exec($ch);
