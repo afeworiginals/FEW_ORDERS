@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: A Few Originals Order Page
+Plugin Name: A Few Orders
 Description: Etsy Order Managment Plugin
-Version: 2.2
+Version: 2.3
 Author: Wade Keller
 */
 
@@ -161,12 +161,31 @@ function afop_display_page() {
         <h1>A Few Originals Order Page</h1>
         <button id="hello-world-btn" class="button-primary">Update Database</button>
         <div id="result"></div>
-        
+        <table border="1">
+  <!-- Table Header -->
+  <thead>
+    <tr>
+      <th>Total Orders</th>
+      <th>Total Transactions</th>
+      <th>Sales Amount</th>
+    </tr>
+  </thead>
+  
+  <!-- Table Body -->
+  <tbody>
+    <tr>
+      <td>100</td> <!-- Replace with your dynamic data -->
+      <td>120</td> <!-- Replace with your dynamic data -->
+      <td>$5000</td> <!-- Replace with your dynamic data -->
+    </tr>
+  </tbody>
+</table>
         <!-- Add a button linking to the Order Display page -->
         <a href="<?php echo $order_display_url; ?>" class="button button-primary">View Orders</a>
     </div>
     <?php
 }
+
 
 
 
