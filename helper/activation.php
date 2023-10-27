@@ -300,6 +300,19 @@ update_option('standard_colors', $standard_colors);
 	
 	update_option('chrome_colors', $chrome_colors);
 	
+
+	$vinyl_type = array(
+		'Standard',
+		'Premium',
+		'Holographic',
+		'Camouflage',
+		'Fluorescent',
+		'Chrome'
+	
+	);
+	
+	
+	update_option('chrome_colors', $chrome_colors);
 	
 	
 }
