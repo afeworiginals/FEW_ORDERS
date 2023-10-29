@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: A Few Orders
+Plugin Name: A Few Orders Test
 Description: Etsy Order Managment Plugin
-Version: 2.3
+Version: 2.3a
 Author: Wade Keller
 */
 
