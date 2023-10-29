@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: A Few Originals Order Page
+Plugin Name: A Few Orders
 Description: Etsy Order Managment Plugin
-Version: 2.0
+Version: 2.3
 Author: Wade Keller
 */
 
@@ -22,7 +22,25 @@ include_once plugin_dir_path( __FILE__ ) . 'helper/orders-list-table.php';
 
 
 
+function custom_menu_order($menu_order) {
+    if (!$menu_order) return true;
 
+    // Define the items you want to move
+    $move_items = array('afeworiginals-order-page'); // Replace 'your-plugin-slug' with the slug of your plugin
+
+    // Remove the items from their current positions
+    foreach ($move_items as $item) {
+        $move = array_search($item, $menu_order);
+        if ($move) {
+            unset($menu_order[$move]);
+        }
+    }
+
+    // Move the items to the top
+    return array_merge($move_items, $menu_order);
+}
+add_filter('custom_menu_order', 'custom_menu_order');
+add_filter('menu_order', 'custom_menu_order');
 
 
 
@@ -68,8 +86,8 @@ function afop_etsy_api_callback() {
 	
   // 1. Fetch Data from Etsy
     $config_data = get_etsy_config_data();
-	echo $config_data['shop_id'].'<br>';
-    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&limit=2";
+	$fourteen_days_ago = time() - (14 * 24 * 60 * 60);
+    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&sort_order=desc&limit=25&min_created={$fourteen_days_ago}";
 	echo $endpoint;
     $apiResponse = fetchEtsyData($endpoint, $config_data['access_token'], $config_data['client_id']);
 	
@@ -143,12 +161,31 @@ function afop_display_page() {
         <h1>A Few Originals Order Page</h1>
         <button id="hello-world-btn" class="button-primary">Update Database</button>
         <div id="result"></div>
-        
+        <table border="1">
+  <!-- Table Header -->
+  <thead>
+    <tr>
+      <th>Total Orders</th>
+      <th>Total Transactions</th>
+      <th>Sales Amount</th>
+    </tr>
+  </thead>
+  
+  <!-- Table Body -->
+  <tbody>
+    <tr>
+      <td>100</td> <!-- Replace with your dynamic data -->
+      <td>120</td> <!-- Replace with your dynamic data -->
+      <td>$5000</td> <!-- Replace with your dynamic data -->
+    </tr>
+  </tbody>
+</table>
         <!-- Add a button linking to the Order Display page -->
         <a href="<?php echo $order_display_url; ?>" class="button button-primary">View Orders</a>
     </div>
     <?php
 }
+
 
 
 
@@ -173,16 +210,79 @@ function afop_display_order_items() {
     // Fetch all items for the receipt_id from the database
     global $wpdb;
     $table_name = 'few_etsy_orders';
-    $query = $wpdb->prepare("SELECT * FROM {$table_name} WHERE receipt_id = %d", $receipt_id);
+    $query = $wpdb->prepare("SELECT * FROM {$table_name} WHERE receipt_id = %d ORDER BY variations_value_1 ASC", $receipt_id);
     $order_items = $wpdb->get_results($query, ARRAY_A);
+
+    // Initialize variables with default values
+    $buyer_message = 'No Buyer Message';
+    $buyer_name = 'Unknown';
+    $buyer_email = 'Unknown';
+
+     // Initialize an array to hold personalization data
+     $personalizations = [];
+
+        // Loop through each order item to collect personalization data
+    foreach ($order_items as $item) {
+        if (isset($item['variations_value_3']) && !empty($item['variations_value_3'])) {
+            $personalization = esc_html($item['variations_value_3']);
+            if (!isset($personalizations[$personalization])) {
+                $personalizations[$personalization] = 0;
+            }
+            $personalizations[$personalization]++;
+        }
+    }
+
+    // Check if $order_items is not empty
+    if (!empty($order_items)) {
+        if (isset($order_items[0]['buyer_message']) && !empty($order_items[0]['buyer_message'])) {
+            $buyer_message = esc_html($order_items[0]['buyer_message']);
+        }
+        if (isset($order_items[0]['buyer_name'])) {
+            $buyer_name = esc_html($order_items[0]['buyer_name']);
+        }
+        if (isset($order_items[0]['buyer_email'])) {
+            $buyer_email = esc_html($order_items[0]['buyer_email']);
+        }
+    }
 
     $items_list = new OrderItems_List_Table($order_items);
 
     echo '<div class="wrap"><h2>Items for Receipt ID: ' . esc_html($receipt_id) . '</h2>'; 
+
+    // Customer Information Area
+    echo '<div class="customer-info">';
+    echo '<h3>Customer Information</h3>';
+    // Display the fetched fields
+    echo '<p><strong>Name:</strong> ' . $buyer_name . '</p>';
+    echo '<p><strong>Email:</strong> ' . $buyer_email . '</p>';
+    echo '<p><strong>Buyer Message:</strong> ' . $buyer_message . '</p>';
+    echo '</div>';
+
+   // Personalization Information Area
+   echo '<div class="customer-personalization">';
+   echo '<h3>Personalization</h3>';
+   if (!empty($personalizations)) {
+       echo '<ul>';
+       foreach ($personalizations as $personalization => $count) {
+           echo '<li>' . $personalization;
+           if ($count > 1) {
+               echo ' (x' . $count . ')';
+           }
+           echo '</li>';
+       }
+       echo '</ul>';
+   } else {
+       echo '<p>No personalizations found.</p>';
+   }
+   echo '</div>';
+
     $items_list->prepare_items();
     $items_list->display();
     echo '</div>';
 }
+
+
+
 
 
 function afop_display_order_options() {
@@ -242,29 +342,44 @@ error_log("options: " . print_r($options, true));  // Debug line
 add_action('wp_ajax_process_bulk_action', 'few_process_bulk_action');
 
 function few_process_bulk_action() {
-    error_log('few_process_bulk_action function is being executed.');
-    error_log(print_r($_POST, true)); // Log the entire POST array
-
-  global $wpdb; // Global WordPress database object
+    global $wpdb;
     $table_name = 'few_etsy_orders';
-    if (isset($_POST['action'])) {
-        $selectedAction = $_POST['action'];
-        error_log($selectedAction); // Log the entire POST array
-    } else {
+
+    // Log the incoming POST data for debugging
+    error_log('few_process_bulk_action function is being executed DUDE.');
+    error_log(print_r($_POST, true));
+
+    // Parse the form data
+    parse_str($_POST['formData'], $formDataArray);
+
+    // Check if action is set
+    if (!isset($_POST['action'])) {
         error_log('selectedAction is not set.');
         die();
     }
-    parse_str($_POST['formData'], $formDataArray); // Parse the form data into an array
-    error_log(print_r($formDataArray, true)); // Log the entire POST array
-    // Perform actions based on $selectedAction
+
+    $selectedAction = $formDataArray['few_action'];
+    error_log('SELECTED ACTION: ' . $selectedAction);
+
+    // Log the parsed form data
+    error_log(print_r($formDataArray, true));
+
+    // Handle 'update_db' action
     if ($selectedAction === 'update_db') {
-        // Loop through the items and update the database
-        foreach ($formDataArray['items'] as $item) { // Replace 'items' with the actual key in formData
-            $id = $item['id'];
-            $font = $item['variations_value_1'];
-            $vinyl_type = $item['vinyl_type'];
-            $color = $item['vinyl_color'];
-            $decal_text = $item['decal_text'];
+        if (!isset($formDataArray['db_ids'])) {
+            error_log('db_ids are not set.');
+            die();
+        }
+
+        $db_ids = $formDataArray['db_ids'];
+        foreach ($db_ids as $index => $db_id) {
+            error_log("Processing db_id: " . $db_id);
+
+            // Extract other form data
+            $font = $formDataArray['variations_value_1'][$index] ?? null;
+            $vinyl_type = $formDataArray['vinyl_type'][$index] ?? null;
+            $color = $formDataArray['vinyl_color'][$index] ?? null;
+            $decal_text = $formDataArray['decal_text'][$index] ?? null;
 
             // Update the database
             $wpdb->update(
@@ -275,14 +390,33 @@ function few_process_bulk_action() {
                     'vinyl_color' => $color,
                     'decal_text' => $decal_text
                 ],
-                ['id' => $id]
+                ['id' => $db_id]
+            );
+        }
+    }
+    // Handle 'delete' action
+    elseif ($selectedAction === 'delete') {
+        if (!isset($formDataArray['db_ids'])) {
+            error_log('db_ids are not set.');
+            die();
+        }
+
+        $db_ids = $formDataArray['db_ids'];
+        foreach ($db_ids as $db_id) {
+            error_log("Deleting db_id: " . $db_id);
+
+            // Delete the database row
+            $wpdb->delete(
+                $table_name,
+                ['id' => $db_id]
             );
         }
     }
 
-    // Don't forget to die() at the end of AJAX in WordPress
     die();
+
 }
+
 
 
 
