@@ -422,7 +422,7 @@ function few_process_bulk_action() {
 
 function get_vinyl_colors() {
     $vinyl_type = strtolower($_POST['vinyl_type']);
-    $vinyl_color_data = get_option($vinyl_type, []);
+    $vinyl_color_data = get_option($vinyl_types, []);
     $options = '';
 
     if (!empty($vinyl_color_data)) {
