@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: A Few Originals Order Page
-Description: Etsy Order Managment Plugin
-Version: 2.4
+Plugin Name: A Few Originals
+Description: Order Managment Plugin
+Version: 2.5
 Author: Wade Keller
 */
 
@@ -117,7 +117,7 @@ add_action('wp_ajax_afop_hello_world', 'afop_etsy_api_callback'); // If logged i
 
 // Create the main page
 function afop_main_page() {
-    add_menu_page('A Few Originals Order Page', 'A Few Originals Order Page', 'manage_options', 'afeworiginals-order-page', 'afop_display_page');
+    add_menu_page('A Few Originals', 'A Few Originals', 'manage_options', 'afeworiginals-order-page', 'afop_display_page');
 }
 add_action('admin_menu', 'afop_main_page');
 
@@ -423,8 +423,8 @@ function few_process_bulk_action() {
 function get_vinyl_colors() {
     $vinyl_type = strtolower($_POST['vinyl_type']);
     $vinyl_color_data = get_option($vinyl_type, []);
-print_r($vinyl_type, true);
-print_r($vinyl_color_data, true);
+//print_r($vinyl_type, true);
+//print_r($vinyl_color_data, true);
     $options = '';
 
     if (!empty($vinyl_color_data)) {
