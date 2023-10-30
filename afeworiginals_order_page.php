@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: A Few Orders Test
+Plugin Name: A Few Originals Order Page
 Description: Etsy Order Managment Plugin
-Version: 2.3a
+Version: 2.2
 Author: Wade Keller
 */
 
@@ -87,7 +87,7 @@ function afop_etsy_api_callback() {
   // 1. Fetch Data from Etsy
     $config_data = get_etsy_config_data();
 	$fourteen_days_ago = time() - (14 * 24 * 60 * 60);
-    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&sort_order=desc&limit=25&min_created={$fourteen_days_ago}";
+    $endpoint = "https://api.etsy.com/v3/application/shops/{$config_data['shop_id']}/receipts?was_shipped=false&sort_order=desc&limit=35&min_created={$fourteen_days_ago}";
 	echo $endpoint;
     $apiResponse = fetchEtsyData($endpoint, $config_data['access_token'], $config_data['client_id']);
 	
@@ -185,7 +185,6 @@ function afop_display_page() {
     </div>
     <?php
 }
-
 
 
 
