@@ -301,12 +301,12 @@ update_option('standard_colors', $standard_colors);
 	update_option('chrome_colors', $chrome_colors);
 	
 	$vinyl_types = array(
-		'standard',
-		'glitter',
-		'camouflage',
-		'holographic',
-		'fluorescent',
-		'chrome'
+		'standard_colors',
+		'glitter_colors',
+		'camouflage_colors',
+		'holographic_colors',
+		'fluorescent_colors',
+		'chrome_colors'
 	
 	);
 	
