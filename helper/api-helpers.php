@@ -32,8 +32,6 @@ function fetchEtsyData($url, $token, $clientId, $headers = []) {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => $headers,
         CURLOPT_CAINFO => '/wamp64/www/wordpress/cacert.pem'
-
-
     ]);
 
     $response = curl_exec($ch);
@@ -109,23 +107,129 @@ function compileReceiptData($receipt, $transaction) {
         'shipping_method' => $transaction['shipping_method']
     ];
 
+    $nameFontMapping = array(
+        'alexis' => 'arial',
+        'barbie' => 'dollie',
+        'bonnie' => 'bebas',
+        'carol' => 'ambassador',
+        'cowboy' => 'west',
+        'darcy' => 'lightning',
+        'disney' => 'new walt',
+        'erica' => 'code',
+        'flynn' => 'cavorting',
+        'georgia' => 'cool',
+        'isabella' => 'ludicrous',
+        'jackson' => 'freshman',
+        'kayla' => 'minya nouvelle',
+        'laura' => 'montage',
+        'maggie' => 'luna',
+        'natalie' => 'master of break',
+        'peter' => 'pacifico',
+        'spaceman' => 'space ranger',
+        'superhero' => 'avengeance',
+        'tristan' => 'trashhand',
+        'ulysses' => 'rosaline',
+        'vintage' => 'vintage',
+        'william' => 'sprightly',
+        'adam' => 'worchestershire',
+        'becky' => 'bujole',
+        'chris' => 'black oval',
+        'denise' => 'syukur',
+        'edward' => 'bring',
+        'fiona' => 'comely',
+        'greg' => 'burtons',
+        'hannah' => 'young coconut display',
+        'isaac' => 'cartwheel',
+        'jenna' => 'fashionista',
+        'kyle' => 'young coconut script',
+        'lisa' => 'fish',
+        'mark' => 'charlotte',
+        'nancy' => 'all spice',
+        'olivia' => 'valentino',
+        'paige' => 'parkranger',
+        'reagan' => 'holiday brush',
+        'scott' => 'sandy beaches',
+        'tracy' => 'kubika',
+        'ursala' => 'hot deals',
+        'vanessa' => 'intruding cat',
+        'wade' => 'lonssa',
+        'zaine' => 'sling normal',
+        'aaron' => 'tragic marker',
+        'bailey' => 'lemon drizzle',
+        'cathy' => 'adl mountain',
+        'dennis' => 'pathfinder',
+        'elviria' => 'blackchancery',
+        'frank' => 'the trickster',
+        'gabriela' => 'archemy',
+        'hamlet' => 'klsunnybeach',
+        'ingrid' => 'winery',
+        'james' => 'cornelia',
+        'kacey' => 'bangers',
+        'lance' => 'horizon',
+        'michael' => 'ardilla',
+        'nadine' => 'lovestone',
+        'owen' => 'jonathan',
+        'patrick' => 'hello dina',
+        'quimby' => 'paramount',
+        'rachel' => 'stencil',
+        'ryan' => 'valentine',
+        'tyler' => 'stacked',
+        'umberto' => 'old press',
+        'victor' => 'some time later',
+        'zena' => 'sofia'
+
+);
+
+ 
+
     $variations_data = [];
     $vinyl_type = 'standard_colors'; // Default value
-
+ echo '<br>';
     if (isset($transaction['variations'])) {
         foreach ($transaction['variations'] as $index => $variation) {
             $variations_data["variations_name_" . ($index + 1)] = $variation['formatted_name'];
             $variations_data["variations_value_" . ($index + 1)] = $variation['formatted_value'];
 
-            // Check if variations_value_2 contains the word "Premium"
-            if ($index + 1 === 2 && strpos(strtolower($variation['formatted_value']), 'premium') !== false) {
-                $vinyl_type = 'glitter_colors';
+              if ($index + 1 === 1 && strpos(strtolower($variation['formatted_name']), 'font') !== false) {
+                $base_font = strtolower($variation['formatted_value']);
+                // Lookup the true font using the base font from the nameFontMapping array
+                $true_font = $nameFontMapping[$base_font] ?? 'default_font'; // You can replace 'default_font' with a suitable default if the font name isn't found in the mapping.
+
+                echo 'base font - ' .$base_font;
+                echo '<br>';
+                 echo 'true font - ' .$true_font;
+                echo '<br>';
+
             }
+
+         // Check if the current variation is the second one
+            if ($index + 1 === 2) {
+                
+                // Always strip down the formatted_value
+                $stripped_value_base = substr($variation['formatted_value'], 0, 4);
+                $stripped_value = preg_replace('/[a-zA-Z]/', '', $stripped_value_base);
+                 // Convert the stripped value to a float and add 0.1
+                $adjusted_value = floatval($stripped_value) + 0.1;
+                echo 'stripped value - ' . $stripped_value;
+                echo '<br>';
+                echo 'adjusted_value - ' . $adjusted_value;
+                echo '<br>';
+
+                // Then check if the formatted_value contains the word "Premium"
+                if (strpos(strtolower($variation['formatted_value']), 'premium') !== false) {
+                    $vinyl_type = 'glitter_colors';
+                }
+            }
+
+        
+
+           
         }
     }
 
-    // Add vinyl_type to the return array
-    return array_merge($baseData, $transactionData, $variations_data, ['vinyl_type' => $vinyl_type]);
+
+    // If you need to use the $true_font in your return array, you can merge it like so:
+return array_merge($baseData, $transactionData, $variations_data, ['vinyl_type' => $vinyl_type, 'true_font' => $true_font, 'true_size' => $adjusted_value]);
 }
 
 

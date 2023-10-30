@@ -2,7 +2,7 @@
 /*
 Plugin Name: A Few Originals
 Description: Order Managment Plugin
-Version: 2.5
+Version: 1.0
 Author: Wade Keller
 */
 
@@ -343,7 +343,78 @@ add_action('wp_ajax_process_bulk_action', 'few_process_bulk_action');
 function few_process_bulk_action() {
     global $wpdb;
     $table_name = 'few_etsy_orders';
-
+     $nameFontMapping = array(
+        'alexis' => 'arial',
+        'barbie' => 'dollie',
+        'bonnie' => 'bebas',
+        'carol' => 'ambassador',
+        'cowboy' => 'west',
+        'darcy' => 'lightning',
+        'disney' => 'new walt',
+        'erica' => 'code',
+        'flynn' => 'cavorting',
+        'georgia' => 'cool',
+        'isabella' => 'ludicrous',
+        'jackson' => 'freshman',
+        'kayla' => 'minya nouvelle',
+        'laura' => 'montage',
+        'maggie' => 'luna',
+        'natalie' => 'master of break',
+        'peter' => 'pacifico',
+        'spaceman' => 'space ranger',
+        'superhero' => 'avengeance',
+        'tristan' => 'trashhand',
+        'ulysses' => 'rosaline',
+        'vintage' => 'vintage',
+        'william' => 'sprightly',
+        'adam' => 'worchestershire',
+        'becky' => 'bujole',
+        'chris' => 'black oval',
+        'denise' => 'syukur',
+        'edward' => 'bring',
+        'fiona' => 'comely',
+        'greg' => 'burtons',
+        'hannah' => 'young coconut display',
+        'isaac' => 'cartwheel',
+        'jenna' => 'fashionista',
+        'kyle' => 'young coconut script',
+        'lisa' => 'fish',
+        'mark' => 'charlotte',
+        'nancy' => 'all spice',
+        'olivia' => 'valentino',
+        'paige' => 'parkranger',
+        'reagan' => 'holiday brush',
+        'scott' => 'sandy beaches',
+        'tracy' => 'kubika',
+        'ursala' => 'hot deals',
+        'vanessa' => 'intruding cat',
+        'wade' => 'lonssa',
+        'zaine' => 'sling normal',
+        'aaron' => 'tragic marker',
+        'bailey' => 'lemon drizzle',
+        'cathy' => 'adl mountain',
+        'dennis' => 'pathfinder',
+        'elviria' => 'blackchancery',
+        'frank' => 'the trickster',
+        'gabriela' => 'archemy',
+        'hamlet' => 'klsunnybeach',
+        'ingrid' => 'winery',
+        'james' => 'cornelia',
+        'kacey' => 'bangers',
+        'lance' => 'horizon',
+        'michael' => 'ardilla',
+        'nadine' => 'lovestone',
+        'owen' => 'jonathan',
+        'patrick' => 'hello dina',
+        'quimby' => 'paramount',
+        'rachel' => 'stencil',
+        'ryan' => 'valentine',
+        'tyler' => 'stacked',
+        'umberto' => 'old press',
+        'victor' => 'some time later',
+        'zena' => 'sofia'
+    
+);
     // Log the incoming POST data for debugging
     error_log('few_process_bulk_action function is being executed DUDE.');
     error_log(print_r($_POST, true));
@@ -373,9 +444,10 @@ function few_process_bulk_action() {
         $db_ids = $formDataArray['db_ids'];
         foreach ($db_ids as $index => $db_id) {
             error_log("Processing db_id: " . $db_id);
-
+ 
             // Extract other form data
-            $font = $formDataArray['variations_value_1'][$index] ?? null;
+            $base_font = $formDataArray['variations_value_1'][$index] ?? null;
+            $true_font = ($nameFontMapping[$base_font]) ?? 'default_font';
             $vinyl_type = $formDataArray['vinyl_type'][$index] ?? null;
             $color = $formDataArray['vinyl_color'][$index] ?? null;
             $decal_text = $formDataArray['decal_text'][$index] ?? null;
@@ -384,7 +456,8 @@ function few_process_bulk_action() {
             $wpdb->update(
                 $table_name,
                 [
-                    'variations_value_1' => $font,
+                    'variations_value_1' => $base_font,
+                    'true_font' => $true_font,
                     'vinyl_type' => $vinyl_type,
                     'vinyl_color' => $color,
                     'decal_text' => $decal_text
@@ -440,6 +513,4 @@ function get_vinyl_colors() {
 }
 
 add_action('wp_ajax_get_vinyl_colors', 'get_vinyl_colors');
-
-
 
