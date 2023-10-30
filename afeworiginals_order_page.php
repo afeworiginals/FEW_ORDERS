@@ -2,7 +2,7 @@
 /*
 Plugin Name: A Few Originals Order Page
 Description: Etsy Order Managment Plugin
-Version: 2.2
+Version: 2.4
 Author: Wade Keller
 */
 
