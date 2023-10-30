@@ -242,6 +242,7 @@ class OrderItems_List_Table extends Base_List_Table {
     }
 
     public function column_default($item, $column_name) {
+        echo '<input type="hidden" name="row_ids[]" value="' . esc_attr($item['id']) . '">';
         $select = '';  // Initialize $select
         if ($column_name == 'title' && strlen($item[$column_name]) > 30) {
             return substr($item[$column_name], 0, 30) . '...';

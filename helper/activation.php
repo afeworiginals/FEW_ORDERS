@@ -312,7 +312,7 @@ update_option('standard_colors', $standard_colors);
 	);
 	
 	
-	update_option('chrome_colors', $chrome_colors);
+	update_option('vinyl_types', $vinyl_type);
 	
 	
 }
